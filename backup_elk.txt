@@ -1,0 +1,40 @@
+curl -XPUT 'localhost:9200/_snapshot/test_backup' -d '{
+  "type": "fs",
+  "settings": {
+       "location": "/var/www/backup"
+  }
+}'
+
+
+curl -XPUT 'localhost:9200/_snapshot/test_backup/snapshot1' -d '{
+  "type": "fs",
+  "settings": {
+       "indices": "test",
+        "ignore_unavailable": true,
+        "include_global_state": false
+  }
+}'
+
+curl -XGET localhost:9200/_snapshot/test_backup/snapshot2----get data
+o/p:
+{"snapshots":[{"snapshot":"snapshot2","uuid":"VihE8BWgRE-s8sRDvvVhNQ","version_id":5010199,"version":"5.1.1","indices":[".kibana","test","sda_eai","sda"],"state":"SUCCESS","start_time":"2017-01-09T12:13:39.484Z","start_time_in_millis":1483964019484,"end_time":"2017-01-09T12:13:40.898Z","end_time_in_millis":1483964020898,"duration_in_millis":1414,"failures":[],"shards":{"total":16,"failed":0,"successful":16}}]}
+
+
+
+
+The shared file system repository ("type": "fs") uses the shared file system to store snapshots. In order to register the shared file system repository it is necessary to mount the same shared filesystem to the same location on all master and data nodes. This location (or one of its parent directories) must be registered in the path.repo setting on all master and data nodes.
+
+Assuming that the shared filesystem is mounted to /mount/backups/my_backup, the following setting should be added to elasticsearch.yml file
+
+
+The command fails if some of the snapshots are unavailable. The boolean parameter ignore_unavailable can be used to return all snapshots that are currently available.
+include_global_state to false it’s possible to prevent the cluster global state to be stored as part of the snapshot.
+
+ a snapshot represents the point-in-time view of the index at the moment when snapshot was created, so no records that were added to the index after the snapshot process was started will be present in the snapshot.
+ creating a copy of each index the snapshot process can also store global cluster metadata, which includes persistent cluster settings and templates. 
+ 
+ Once a snapshot is created information about this snapshot can be obtained using the following command:
+ 
+ The REST endpoint is /{index}/_close and /{index}/_open.
+ 
+ 
